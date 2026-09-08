@@ -1,0 +1,14 @@
+{
+    "success": true,
+    "scene": "Assets/Scenes/ReconstructedRoom.unity",
+    "unity_version": "6000.3.10f1",
+    "mujoco_version": "3.12.0",
+    "coordinate_mapping": "Blender(x,y,z) -> Unity(x,z,y)",
+    "expected_instances": 1025,
+    "imported_instances": 1025,
+    "expected_components": 3538,
+    "imported_components": 3538,
+    "max_bounds_error_m": 0.0000013486991292666062,
+    "missing_components": [],
+    "physics_validation_json": "{\n    \"passed\": true,\n    \"nativeVersion\": \"3.12.0\",\n    \"numberBodies\": 33,\n    \"dynamicBodies\": 32,\n    \"numberGeoms\": 104,\n    \"qpos\": 224,\n    \"degreesOfFreedom\": 192,\n    \"steps\": 1000,\n    \"timestep\": 0.002,\n    \"simulatedSeconds\": 2.0000000000000015,\n    \"peakContacts\": 32,\n    \"finiteState\": true,\n    \"maxBodyDisplacementMetres\": 0.0009719436056911945,\n    \"maxAbsoluteVelocity\": 1.4907480890277248,\n    \"mjcfAssetPath\": \"Assets/MuJoCo/reconstructed_physics.xml\"\n}"
+}
