@@ -8,7 +8,7 @@ jobs:
       - uses: astral-sh/setup-uv@v6
       - run: uv sync --locked --python 3.12
       - run: uv run pytest
-      - run: uv run ruff check backend tests scripts
+      - run: uv run ruff check backend tests scripts/dev.py scripts/server_macos.py
   web:
     runs-on: ubuntu-latest
     defaults:

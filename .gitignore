@@ -17,3 +17,18 @@ config/.team-access*.lock
 *.log
 *.tsbuildinfo
 Log/
+
+# Unity-generated caches and build outputs
+UnityProject/[Ll]ibrary/
+UnityProject/[Tt]emp/
+UnityProject/[Oo]bj/
+UnityProject/[Ll]ogs/
+UnityProject/[Uu]ser[Ss]ettings/
+UnityProject/Builds/
+UnityProject/*.csproj
+UnityProject/*.sln
+UnityProject/*.slnx
+UnityProject/.vs/
+UnityProject/.idea/
+.downloads/
+*.blend1

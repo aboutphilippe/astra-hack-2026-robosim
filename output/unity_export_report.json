@@ -1,0 +1,19 @@
+{
+  "success": true,
+  "blender_version": "5.2.0 LTS",
+  "fbx": "/Users/andywang/astra-hack-2026/UnityProject/Assets/Reconstruction/Source/reconstructed_scene.fbx",
+  "metadata": "/Users/andywang/astra-hack-2026/UnityProject/Assets/Reconstruction/Source/scene_metadata.json",
+  "components": 3538,
+  "instances": 1025,
+  "vertices": 784867,
+  "triangles": 1543568,
+  "materials": 112,
+  "portable_textures": 35,
+  "fbx_bytes": 48281708,
+  "people_modeled": false,
+  "source_types": {
+    "CURVE": 171,
+    "FONT": 21,
+    "MESH": 3346
+  }
+}

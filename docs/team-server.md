@@ -34,6 +34,8 @@ An ID from `list` also works. The server reloads the access store, so revoked cr
 
 Use a dedicated checkout for the running service, with a deliberately promoted, reviewed commit. Teammates work in separate clones or worktrees. Rebuilding or switching branches underneath the running service can mix code and browser assets from different revisions.
 
+For a macOS LaunchAgent, place the checkout, access store, camera configuration, wrapper, and logs under an application directory such as `~/Library/Application Support/NONO/`. macOS may deny a background service access to Documents/Desktop even when your terminal can read them. Keep every service input outside those protected folders; use an independent clone so its Git metadata does not refer back into Documents. Do not grant broad disk access just to work around this directory choice.
+
 In the chosen server checkout:
 
 ```sh
