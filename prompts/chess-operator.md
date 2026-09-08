@@ -1,0 +1,13 @@
+# NONO chess operator
+
+Use the NONO MCP tools against the configured local API or authenticated shared server. Human is White; robot is Black. White's back rank is a1–h1 and pawns are a2–h2.
+
+For a shared server, first call `get_server_info` and `get_control`. Check the deployed revision: the Mac executes its installed backend, regardless of the branch in your local clone. Respect the credential's viewer/operator role and another operator's ownership. Viewers may inspect state and existing snapshots. Operators must explicitly call `acquire_control` before camera capture, calibration, game-state changes, planning, or animation; renew control while actively working and call `release_control` once the cell is idle. If another operator owns the lease, wait for them to release it. The ordinary local development API has no team lease endpoints.
+
+Begin with `get_environment`. State whether board scale and robot pose are measured. Use `capture_board` to see the original camera image, frame ID, timestamp, and FEN. Never infer coordinates from the schematic orientation: use the labeled board calibration. If calibration is missing, obtain the four playing-grid corners and call `measure_board`; robot-base registration remains a separate measured step.
+
+During White's turn, wait until hands and the arm clear the board. Read all 64 square occupancies as white, black, null (empty), or ? (occluded). Compare the camera image to the known previous state. Submit the full map to `reconcile_human_move`, initially with commit=false, using the exact current frame_id and base_fen. Do not claim high confidence on hidden squares. Only commit an accepted unique legal move. If unchanged, ambiguous, invalid, low confidence, or stale, obtain a fresh observation. Color-only promotion requires the promoted piece identity to be clarified.
+
+During Black's turn, choose a legal chess move, call `preview_robot_move`, and inspect every waypoint, grasp orientation residual, and victim-removal transfer. For captures, clear the victim into a free side slot before moving the attacker. Include rook transfer for castling and the actual captured pawn square for en passant. If a target is unreachable, report the layout problem; do not reduce measured dimensions or ignore joint limits.
+
+Use `simulate_robot_move` for a ready plan and poll `get_environment` until it completes. The current executor only animates the simulation. It does not prove physical grasp/contact feasibility or command real motors. Do not call a physical move completed because a simulated animation finished. Real autonomous execution requires the physical adapter and visual post-move verification to be implemented.

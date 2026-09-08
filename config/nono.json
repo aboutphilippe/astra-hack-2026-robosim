@@ -1,0 +1,21 @@
+{
+  "robot": {
+    "id": "nono", "model": "so101", "follower_port": "/dev/tty.usbmodem5B415320131",
+    "leader_port": "/dev/tty.usbmodem5B415320801",
+    "calibration_path": "~/.cache/huggingface/lerobot/calibration/robots/so_follower/nono.json",
+    "hardware_execution_enabled": false, "base_position_m": [0, 0.50, 0.06], "base_yaw_rad": -1.5707963267948966,
+    "sample_riser_height_m": 0.06, "pose_measured": false
+  },
+  "board": {
+    "square_size_m": 0.0381, "border_m": 0.0254, "height_m": 0.0254,
+    "origin_m": [-0.1524, 0.08, 0.0254], "yaw_rad": 0,
+    "measured": false, "white_back_rank": "a1:h1", "human_color": "white"
+  },
+  "captures": {"origin_m": [-0.21, 0.30, 0.0254], "spacing_m": 0.033, "columns": 2, "capacity": 32},
+  "motion": {"lift_m": 0.10, "grasp_height_m": 0.018, "waypoint_seconds": 0.35, "ik_tolerance_m": 0.004},
+  "calibration": {"status": "unmeasured", "robot_max_rmse_m": 0.005, "camera_corner_order": ["a1_outer", "h1_outer", "h8_outer", "a8_outer"]},
+  "cameras": {
+    "top": {"model": "Orbbec Gemini 336", "backend": "pyorbbecsdk2", "unique_id": "0x22000002bc50803", "sdk_serial": null, "firmware_required": "1.8.10", "width": 640, "height": 480, "fps": 30},
+    "wrist": {"model": "icspring camera", "backend": "avfoundation", "match": "icspring", "unique_id": "0x112000029930858", "width": 1920, "height": 1080}
+  }
+}

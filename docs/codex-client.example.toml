@@ -1,0 +1,12 @@
+# Teammate-local Codex configuration. Use absolute paths on YOUR computer.
+# The URL is assigned by the server owner's private Tailscale endpoint.
+# Tokens belong in a private file, never in a repository or URL.
+[mcp_servers.nono-shared]
+command = "uv"
+args = ["--directory", "/absolute/path/to/your/clone", "run", "nono-mcp"]
+startup_timeout_sec = 30
+tool_timeout_sec = 120
+
+[mcp_servers.nono-shared.env]
+NONO_API_URL = "https://YOUR-SERVER.YOUR-TAILNET.ts.net"
+NONO_API_TOKEN_FILE = "/absolute/path/to/your/private/nono.token"
