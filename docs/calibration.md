@@ -16,9 +16,11 @@ Camera optical coordinates are +x right, +y down, +z forward. A proper board bas
 
 ## Robot-base registration
 
+The initial scene places the robot outside the h-file edge at the h4/h5 midpoint, facing the board. This records the reported side of the board, not a measured robot pose. `robot.placement` keeps the base position relative to the board when depth changes its square size. The sample 100 mm offset refers to the **model base-frame origin**, not clearance from the robot’s nearest surface; the base elevation is also an estimate. The console labels the offset unmeasured. A camera view that crops out the rigid base cannot establish its origin from the visible arm alone.
+
 Choose three or more well-separated, noncollinear rigid base landmarks whose model coordinates are known. Their robot coordinates come from the robot CAD/model, not a ruler estimate of where the arm happens to be. Pair each with a pixel in the same depth snapshot. This provides a rigid camera-to-robot transform and residual report. A printed fiducial with a fixed, known base mount is a future way to automate this correspondence step.
 
-Submit `/api/calibration/robot-rgbd` with `landmarks: [{pixel: [u,v], robot_m: [x,y,z]}, ...]`, or call the Codex tool `register_robot_base`. This composes camera-to-robot with the measured board-to-camera transform, rejects tilted/inverted geometry, and rebuilds the scene in the robot base frame. It resets the game. The discarded-piece area is still a sample layout until separately measured.
+Submit `/api/calibration/robot-rgbd` with `landmarks: [{pixel: [u,v], robot_m: [x,y,z]}, ...]`, or call the Codex tool `register_robot_base`. This composes camera-to-robot with the measured board-to-camera transform, rejects tilted/inverted geometry, and rebuilds the scene in the robot base frame. Measured registration replaces the board-relative placement estimate. It resets the game. The discarded-piece area is still a sample layout until separately measured.
 
 Alternatively, `/api/calibration/robot` takes measured correspondence pairs:
 

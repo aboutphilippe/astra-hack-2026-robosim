@@ -21,7 +21,7 @@ If port 8000 is occupied, run `NONO_PORT=8010 NONO_API_URL=http://127.0.0.1:8010
 
 Click a White piece and a legal destination, then simulate NONO’s turn. The demo uses a small deterministic chess search. Captures first move the victim into the next free side slot. En passant removes the pawn from its actual square; castling includes the rook; promotion is explicitly flagged for a physical piece swap.
 
-The demo’s 38.1 mm squares, board pose, piece profiles, and **60 mm robot riser are unmeasured sample geometry**. They enable a reproducible opening preview. Some distant squares and later capture slots are outside the arm’s vertical grasp workspace. An unreachable plan stays blocked, with residuals visible. Do not copy this pose to real motors.
+The robot starts outside the **h-file edge, centered between h4 and h5**, facing into the board, following the reported desk arrangement. This board-relative placement updates when the board scale or pose changes. Its 100 mm offset from the outer border to the model’s base origin and zero elevation above the board bottom are explicitly **unmeasured estimates**; no riser is invented. The initial 38.1 mm squares, board pose, and piece profiles are also sample geometry until calibrated. Opening lifts, distant squares, and capture slots can be outside the arm’s vertical grasp workspace. An unreachable plan stays blocked, with residuals visible. Do not copy this pose to real motors.
 
 ## Measure instead of guessing
 

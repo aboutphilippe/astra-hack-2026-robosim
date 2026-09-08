@@ -55,6 +55,9 @@ function Calibration({ state, canMutate, onClose, onRefresh, reportError }: { st
   const [manual, setManual] = useState(false)
   const [size, setSize] = useState((state?.config.board.square_size_m ?? .0381) * 1000)
   const [origin, setOrigin] = useState<Vec3>((state?.config.board.origin_m || [-.1524, .08, .0254]).map(v => v * 1000) as Vec3)
+  const placement = state?.config.robot.placement
+  const placementEdge = placement?.edge === 'h' && placement.along_fraction === .5 ? 'h4–h5 edge' : `${placement?.edge} edge`
+  const placementStatus = state?.config.robot.pose_measured ? 'Robot pose · measured' : placement?.mode === 'board_edge' ? `${placementEdge} · ${placement.measured ? 'placement measured' : 'offset unmeasured'}` : 'Robot pose · unmeasured'
   const labels = ['a1 outer', 'h1 outer', 'h8 outer', 'a8 outer']
   const perform = async (action: () => Promise<void>) => {
     if (!canMutate) { setCalibrationError('Take control of the shared session before changing calibration.'); return }
@@ -65,6 +68,7 @@ function Calibration({ state, canMutate, onClose, onRefresh, reportError }: { st
     <section className="calibration-modal" role="dialog" aria-modal="true" aria-labelledby="calibration-title">
       <header className="modal-header"><div><div className="eyebrow">REAL WORLD → DIGITAL TWIN</div><h2 id="calibration-title">One board. Both worlds.</h2><p>Measure the board with the overhead RGB-D camera.</p></div><button className="icon-button" aria-label="Close calibration" onClick={onClose}><X size={21} /></button></header>
       <div className="calibration-body">
+        {state && <div className="robot-placement-status"><RobotMark size={19} /><span>{placementStatus}</span></div>}
         {!canMutate && <p className="calibration-readonly"><Eye size={16} /> Read-only view. An operator must take control to capture frames or update calibration.</p>}
         <div className="calibration-steps"><div className="calibration-step"><span>01</span><div><strong>Find the White back rank</strong><p>Identify a1–h1 in the original camera image. Keep the image unmirrored and clear hands from the board.</p></div></div><div className="calibration-step"><span>02</span><div><strong>Capture an RGB-D frame</strong><p>Gemini 336 supplies color, depth, and camera intrinsics through the Orbbec SDK.</p></div></div><div className="calibration-step"><span>03</span><div><strong>Select four playing-grid corners</strong><p>Click a1 → h1 → h8 → a8 in any image orientation, excluding the border. Depth determines the metric scale.</p></div></div></div>
         <div className="calibration-capture">

@@ -20,7 +20,7 @@ from pydantic import BaseModel, Field
 
 from .calibration import BoardCalibration
 from .chess_logic import ChessGame
-from .config import ROOT, load_config, validate_board
+from .config import ROOT, load_config, resolve_robot_placement, validate_board
 from .hardware import capture_top, capture_wrist, discover
 from .simulation import Simulation
 
@@ -71,7 +71,7 @@ class LandmarksRequest(BaseModel):
 
 class Cell:
     def __init__(self, config: dict | None = None):
-        self.config = deepcopy(config or load_config())
+        self.config = resolve_robot_placement(config or load_config())
         self.game = ChessGame(self.config)
         self.simulation = Simulation(self.config)
         self.calibration = BoardCalibration(self.config)
@@ -263,6 +263,7 @@ class Cell:
                 await self.task
             except asyncio.CancelledError:
                 pass
+        self.config = resolve_robot_placement(self.config)
         self.game = ChessGame(self.config)
         self.simulation = Simulation(self.config)
         self.status, self.last_move, self.plan = "ready", None, None
@@ -347,6 +348,7 @@ def create_app(config: dict | None = None):
         new = {**cell().config["board"], **request.model_dump(), "measured": False}
         validate_board(new)
         cell().config["board"] = new
+        cell().config["robot"]["pose_measured"] = False
         cell().calibration = BoardCalibration(cell().config)
         cell().measurement = None
         cell().robot_registration = None
@@ -372,7 +374,10 @@ def create_app(config: dict | None = None):
         measurement["capture_id"] = frame.get("capture_id", frame["frame_id"])
         board = {**cell().config["board"], "square_size_m": measurement["square_size_m"], "measured": True}
         validate_board(board)
-        candidate_config = {**cell().config, "board": board}
+        candidate_config = resolve_robot_placement({
+            **cell().config, "board": board,
+            "robot": {**cell().config["robot"], "pose_measured": False},
+        })
         calibration = BoardCalibration(candidate_config)
         calibration.fit_camera(request.corners_px)
         heights = piece_heights_rgbd(frame["depth_m"], frame["intrinsics"], measurement)
@@ -410,6 +415,7 @@ def create_app(config: dict | None = None):
                              "yaw_rad": float(np.arctan2(transform[1, 0], transform[0, 0]))})
         cfg["robot"].update({"base_position_m": [0, 0, 0], "base_yaw_rad": 0,
                              "sample_riser_height_m": 0, "pose_measured": True})
+        cfg["robot"].pop("placement", None)
         validate_board(cfg["board"])
         calibration = BoardCalibration(cfg)
         calibration.fit_camera(measurement["corners_px"])

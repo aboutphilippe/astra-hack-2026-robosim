@@ -10,6 +10,21 @@ export type Geom = {
   mesh?: string
 }
 export type Waypoint = { phase: string; target: Vec3; qpos: number[]; error_m: number }
+export type RobotConfig = {
+  base_position_m?: Vec3
+  base_yaw_rad?: number
+  pose_measured?: boolean
+  placement?: {
+    mode: string
+    edge: string
+    along_fraction: number
+    base_origin_offset_m: number
+    elevation_above_board_bottom_m: number
+    measured: boolean
+    source: string
+  }
+  [key: string]: unknown
+}
 export type LabState = {
   mode: string
   fen: string
@@ -24,7 +39,7 @@ export type LabState = {
   events: { time: string | number; message: string }[]
   config: {
     board: { square_size_m: number; origin_m: Vec3; border_m: number; height_m: number; yaw_rad?: number }
-    robot: Record<string, unknown>
+    robot: RobotConfig
     [key: string]: unknown
   }
   calibration: { status: string; [key: string]: unknown }

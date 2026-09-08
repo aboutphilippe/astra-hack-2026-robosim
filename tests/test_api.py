@@ -138,6 +138,19 @@ def test_invalid_board_config_preserves_current_game_and_geometry(client):
     assert cell.game.board.fen() == fen
 
 
+def test_board_resize_keeps_unmeasured_robot_beside_h4_h5(client):
+    response = client.post("/api/config/board", json={"square_size_m": 0.045, "origin_m": [0.1, -0.2, 0.0254]})
+    assert response.status_code == 200
+    config = response.json()["config"]
+    robot, board = config["robot"], config["board"]
+    assert robot["base_position_m"] == pytest.approx([
+        0.1 + 8 * 0.045 + board["border_m"] + robot["placement"]["base_origin_offset_m"],
+        -0.2 + 4 * 0.045, 0,
+    ])
+    assert not robot["pose_measured"]
+    assert client.app.state.cell.simulation.config["robot"]["base_position_m"] == robot["base_position_m"]
+
+
 def test_invalid_measured_scale_preserves_prior_calibration_and_measurement(client, monkeypatch):
     cell = client.app.state.cell
     corners = [[100, 100], [500, 100], [500, 500], [100, 500]]
@@ -211,7 +224,8 @@ def test_robot_registration_rejects_board_measurement_from_another_capture(clien
     assert cell.robot_registration is None
 
 
-def test_rgbd_measurement_and_robot_registration_build_measured_scene_in_one_capture(client):
+def register_sample_rgbd(client):
+    """Exercise both calibration routes with an aligned planar sample capture."""
     cell = client.app.state.cell
     camera = {"fx": 800, "fy": 800, "cx": 300, "cy": 300}
     cell.latest_frame = {"frame_id": "before-measure", "capture_id": "same-physical-capture",
@@ -222,6 +236,7 @@ def test_rgbd_measurement_and_robot_registration_build_measured_scene_in_one_cap
     measured = client.post("/api/calibration/measure", json={"corners_px": corners})
     assert measured.status_code == 200
     assert cell.config["board"]["square_size_m"] == pytest.approx(0.05)
+    assert cell.config["robot"]["base_position_m"][1] == pytest.approx(cell.config["board"]["origin_m"][1] + 4 * 0.05)
     assert cell.latest_frame["frame_id"] != "before-measure"
     assert cell.latest_frame["capture_id"] == "same-physical-capture"
     assert cell.measurement["capture_id"] == "same-physical-capture"
@@ -232,8 +247,54 @@ def test_rgbd_measurement_and_robot_registration_build_measured_scene_in_one_cap
         landmarks.append({"pixel": pixel, "robot_m": (rotation @ camera_point + translation).tolist()})
     registered = client.post("/api/calibration/robot-rgbd", json={"landmarks": landmarks})
     assert registered.status_code == 200
+    return corners, registered
+
+
+def test_rgbd_measurement_and_robot_registration_build_measured_scene_in_one_capture(client):
+    _, registered = register_sample_rgbd(client)
+    cell = client.app.state.cell
     assert cell.config["board"]["origin_m"] == pytest.approx([0.1, 0.2, 0])
     assert cell.config["board"]["yaw_rad"] == pytest.approx(0)
     assert cell.config["robot"]["pose_measured"]
+    assert "placement" not in cell.config["robot"]
     assert registered.json()["calibration"]["robot_calibrated"]
     assert not registered.json()["calibration"]["hardware_ready"]
+
+
+@pytest.mark.parametrize("operation", ["manual_board_change", "remeasure"])
+def test_board_changes_invalidate_measured_robot_pose_without_reintroducing_estimated_side(client, operation):
+    corners, _ = register_sample_rgbd(client)
+    cell = client.app.state.cell
+    measured_position = deepcopy(cell.config["robot"]["base_position_m"])
+    measured_yaw = cell.config["robot"]["base_yaw_rad"]
+    assert cell.config["robot"]["pose_measured"]
+    assert cell.robot_registration is not None
+    if operation == "manual_board_change":
+        response = client.post("/api/config/board", json={
+            "square_size_m": .045, "origin_m": [.1, .2, .0254],
+        })
+    else:
+        response = client.post("/api/calibration/measure", json={"corners_px": corners})
+    assert response.status_code == 200
+    state = response.json()
+    robot = state["config"]["robot"]
+    assert not robot["pose_measured"]
+    assert not state["calibration"]["robot_calibrated"]
+    assert state["calibration"]["robot_registration"] is None
+    assert "placement" not in robot
+    assert robot["base_position_m"] == measured_position
+    assert robot["base_yaw_rad"] == measured_yaw
+    assert not cell.simulation.config["robot"]["pose_measured"]
+
+
+def test_game_reset_preserves_registered_geometry_and_measured_pose(client):
+    register_sample_rgbd(client)
+    cell = client.app.state.cell
+    config, registration = deepcopy(cell.config), deepcopy(cell.robot_registration)
+    assert client.post("/api/move", json={"uci": "e2e4"}).status_code == 200
+    response = client.post("/api/reset")
+    assert response.status_code == 200
+    assert cell.config == config
+    assert cell.robot_registration == registration
+    assert response.json()["calibration"]["robot_calibrated"]
+    assert response.json()["config"]["robot"]["pose_measured"]

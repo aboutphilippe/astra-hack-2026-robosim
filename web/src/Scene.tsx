@@ -76,32 +76,39 @@ function RobotGeom({ geom }: { geom: Geom }) {
   </group>
 }
 
-function CameraRig({ view, center }: { view: 'orbit' | 'top'; center: Vec3 }) {
+function CameraRig({ view, center, framingScale }: { view: 'orbit' | 'top'; center: Vec3; framingScale: number }) {
   const controls = useRef<OrbitControlsImpl>(null)
-  const { camera } = useThree()
+  const { camera, size } = useThree()
+  const cameraScale = framingScale * Math.max(1, size.height / Math.max(size.width, 1))
   const cx = center[0], cy = center[1], cz = center[2]
   useEffect(() => {
     camera.up.set(0, 0, 1)
     if (view === 'top') {
       camera.up.set(0, -1, 0)
-      camera.position.set(cx, cy, .88)
-    } else camera.position.set(cx + .56, cy - .70, cz + .69)
+      camera.position.set(cx, cy, cz + .88 * cameraScale)
+    } else camera.position.set(cx + .56 * cameraScale, cy - .70 * cameraScale, cz + .69 * cameraScale)
     camera.lookAt(cx, cy, cz)
     controls.current?.target.set(cx, cy, cz)
     controls.current?.update()
-  }, [view, cx, cy, cz, camera])
-  return <OrbitControls ref={controls} makeDefault target={center} enableRotate={view !== 'top'} minDistance={.28} maxDistance={1.7} maxPolarAngle={Math.PI / 2.02} enableDamping dampingFactor={.1} />
+  }, [view, cx, cy, cz, cameraScale, camera])
+  return <OrbitControls ref={controls} makeDefault target={center} enableRotate={view !== 'top'} minDistance={.28} maxDistance={1.7 * cameraScale} maxPolarAngle={Math.PI / 2.02} enableDamping dampingFactor={.1} />
 }
 
 function Twin({ state, view, showPath }: { state: LabState; view: 'orbit' | 'top'; showPath: boolean }) {
   const { square_size_m: size, origin_m: origin, border_m: border, height_m: height, yaw_rad: yaw = 0 } = state.config.board
   const width = 8 * size
   const center: Vec3 = [origin[0] + width / 2 * (Math.cos(yaw) - Math.sin(yaw)), origin[1] + width / 2 * (Math.sin(yaw) + Math.cos(yaw)), origin[2]]
+  const configuredBase = state.config.robot.base_position_m
+  const base = configuredBase?.length === 3 && configuredBase.every(Number.isFinite) ? configuredBase : null
+  // Frame the fixture from its fixed board/base positions, so animation never recenters the camera.
+  const framingCenter: Vec3 = base ? [(center[0] * 2 + base[0]) / 3, (center[1] * 2 + base[1]) / 3, Math.max(center[2], base[2]) + .07] : [center[0], center[1] + .035, center[2] + .06]
+  const framingSpan = Math.max(width + border * 2, base ? Math.hypot(base[0] - center[0], base[1] - center[1], base[2] - center[2]) + width / 2 + border : 0)
+  const framingScale = Math.max(1, framingSpan / .55)
   const visibleGeoms = state.simulation.geoms.filter(geom => !/^(board|square|piece|capture|floor|table|ground)/i.test(geom.name))
   const path = state.plan?.waypoints.map(point => point.target)
   const lastFrom = state.last_move?.slice(0, 2), lastTo = state.last_move?.slice(2, 4)
   return <>
-    <CameraRig view={view} center={[center[0], center[1] + .035, center[2] + .06]} />
+    <CameraRig view={view} center={framingCenter} framingScale={framingScale} />
     <ambientLight intensity={1.1} />
     <hemisphereLight args={['#fbfff6', '#819182', 1.1]} />
     <directionalLight position={[-.5, -.3, 1.2]} intensity={2.5} castShadow shadow-mapSize={[2048, 2048]} shadow-camera-left={-.75} shadow-camera-right={.75} shadow-camera-top={.85} shadow-camera-bottom={-.7} shadow-bias={-.0001} />
@@ -118,6 +125,7 @@ function Twin({ state, view, showPath }: { state: LabState; view: 'orbit' | 'top
     })}
     {FILES.split('').map((file, x) => <BoardLabel key={file} label={file.toUpperCase()} position={[(x + .5) * size, -border * .55, .002]} />)}
     {Array.from({ length: 8 }, (_, y) => <BoardLabel key={y} label={String(y + 1)} position={[-border * .55, (y + .5) * size, .002]} />)}
+    {Array.from({ length: 8 }, (_, y) => <BoardLabel key={`h-${y}`} label={String(y + 1)} position={[width + border * .55, (y + .5) * size, .002]} />)}
     </group>
     {state.pieces.map(piece => <ChessPiece key={piece.square} kind={piece.piece} color={piece.color} position={piece.position} height={piece.height_m} />)}
     {state.captures.map((piece, i) => <ChessPiece key={`capture-${i}`} kind={piece.piece} color={piece.color} position={piece.position} />)}

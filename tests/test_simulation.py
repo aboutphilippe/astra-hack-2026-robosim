@@ -8,9 +8,18 @@ import pytest
 from chessbot.simulation import JOINT_NAMES, Simulation
 
 
+def reachable_regression_fixture():
+    """Explicit synthetic raised rig for IK regressions, not the observed desk layout."""
+    config = json.loads((Path(__file__).resolve().parents[1] / "config" / "nono.json").read_text())
+    config["robot"].pop("placement", None)
+    config["robot"].update({"base_position_m": [0, 0.50, 0.06], "base_yaw_rad": -math.pi / 2,
+                             "sample_riser_height_m": 0.06, "pose_measured": False})
+    return config
+
+
 @pytest.fixture(scope="module")
 def simulation():
-    return Simulation({})
+    return Simulation(reachable_regression_fixture())
 
 
 def test_real_model_and_board_dimensions(simulation):
@@ -28,7 +37,7 @@ def test_real_model_and_board_dimensions(simulation):
 
 def test_browser_raw_mesh_transform_matches_source_xml(simulation):
     # The first mesh's upstream position is (-.006365,-.000099,-.0024).
-    # Default base yaw -pi/2 rotates (x,y,z) -> (y,-x,z).
+    # This explicit regression fixture uses yaw -pi/2: (x,y,z) -> (y,-x,z).
     geom = next(g for g in simulation.snapshot()["geoms"] if g["name"] == "base_geom_0")
     assert np.allclose(geom["position"], [-0.000099, 0.506365, 0.0576], atol=1e-7)
     assert geom["mesh"].endswith("/base_motor_holder_so101_v1.stl")
@@ -90,7 +99,7 @@ def test_measured_board_config_rebuilds_metric_geometry():
 
 
 def test_sample_opening_and_first_capture_waypoints_are_reachable():
-    config = json.loads((Path(__file__).resolve().parents[1] / "config" / "nono.json").read_text())
+    config = reachable_regression_fixture()
     sim = Simulation(config)
     board = config["board"]
     origin = np.array(board["origin_m"])

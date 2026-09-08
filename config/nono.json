@@ -3,8 +3,10 @@
     "id": "nono", "model": "so101", "follower_port": "/dev/tty.usbmodem5B415320131",
     "leader_port": "/dev/tty.usbmodem5B415320801",
     "calibration_path": "~/.cache/huggingface/lerobot/calibration/robots/so_follower/nono.json",
-    "hardware_execution_enabled": false, "base_position_m": [0, 0.50, 0.06], "base_yaw_rad": -1.5707963267948966,
-    "sample_riser_height_m": 0.06, "pose_measured": false
+    "hardware_execution_enabled": false, "sample_riser_height_m": 0, "pose_measured": false,
+    "placement": {"mode": "board_edge", "edge": "h", "along_fraction": 0.5,
+      "base_origin_offset_m": 0.10, "elevation_above_board_bottom_m": 0,
+      "measured": false, "source": "user_reported_h4_h5"}
   },
   "board": {
     "square_size_m": 0.0381, "border_m": 0.0254, "height_m": 0.0254,

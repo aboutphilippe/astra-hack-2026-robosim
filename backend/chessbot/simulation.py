@@ -8,10 +8,13 @@ from __future__ import annotations
 
 import math
 import xml.etree.ElementTree as ET
+from copy import deepcopy
 from pathlib import Path
 
 import mujoco
 import numpy as np
+
+from .config import resolve_robot_placement
 
 ASSET_DIR = Path(__file__).resolve().parents[2] / "assets" / "so101"
 JOINT_NAMES = ("shoulder_pan", "shoulder_lift", "elbow_flex", "wrist_flex", "wrist_roll", "gripper")
@@ -43,7 +46,7 @@ class Simulation:
     """
 
     def __init__(self, config: dict | None = None):
-        self.config = config or {}
+        self.config = resolve_robot_placement(config or {})
         board = self.config.get("board", {})
         robot = self.config.get("robot", {})
         self.board_origin = _vec(board.get("origin_m", DEFAULT_BOARD_ORIGIN), 3, "board origin")
@@ -62,9 +65,11 @@ class Simulation:
         root.find("compiler").set("meshdir", str(ASSET_DIR / "assets"))
         world = root.find("worldbody")
         base = world.find("body[@name='base']")
-        self.base_position = _vec(robot.get("base_position_m", [0, 0.50, 0.06]), 3, "robot base")
+        estimated_h_edge = self.board_origin + self.board_rotation @ [
+            8 * self.square_size + self.border + 0.10, 4 * self.square_size, -self.thickness]
+        self.base_position = _vec(robot.get("base_position_m", estimated_h_edge), 3, "robot base")
         base.set("pos", _numbers(self.base_position))
-        yaw = float(robot.get("base_yaw_rad", -math.pi / 2))
+        yaw = float(robot.get("base_yaw_rad", self.board_yaw + math.pi))
         if not math.isfinite(yaw):
             raise ValueError("Robot base yaw must be finite")
         base.set("quat", _numbers([math.cos(yaw / 2), 0, 0, math.sin(yaw / 2)]))
@@ -74,7 +79,7 @@ class Simulation:
                 if not geom.get("name"):
                     geom.set("name", f"{body.get('name')}_geom_{index}")
         self._add_board(world)
-        riser = float(robot.get("sample_riser_height_m", max(0, self.base_position[2])))
+        riser = float(robot.get("sample_riser_height_m", 0))
         if not math.isfinite(riser) or riser < 0:
             raise ValueError("Riser height must be finite and nonnegative")
         if riser:
@@ -310,4 +315,7 @@ class Simulation:
                 item["mesh"] = mesh
             geoms.append(item)
         rotation = self.data.site_xmat[self.site_id].reshape(3, 3)
-        return {"joints": [{"name": name, "position": float(self.qpos[i]), "min": float(self.limits[i, 0]), "max": float(self.limits[i, 1])} for i, name in enumerate(JOINT_NAMES)], "qpos": self.qpos.tolist(), "tcp": self.data.site_xpos[self.site_id].tolist(), "approach_axis": rotation[:, 0].tolist(), "geoms": geoms, "contacts": self._contacts(self.data), "simulation_time": float(self.data.time), "model": "MuJoCo Menagerie SO-101", "units": {"position": "metres", "joints": "radians", "quaternion": "wxyz"}}
+        robot = self.config.get("robot", {})
+        robot_pose = {"base_position_m": self.base_position.tolist(), "base_yaw_rad": self.base_yaw,
+                      "pose_measured": robot.get("pose_measured", False), "placement": deepcopy(robot.get("placement"))}
+        return {"joints": [{"name": name, "position": float(self.qpos[i]), "min": float(self.limits[i, 0]), "max": float(self.limits[i, 1])} for i, name in enumerate(JOINT_NAMES)], "qpos": self.qpos.tolist(), "tcp": self.data.site_xpos[self.site_id].tolist(), "approach_axis": rotation[:, 0].tolist(), "geoms": geoms, "contacts": self._contacts(self.data), "simulation_time": float(self.data.time), "model": "MuJoCo Menagerie SO-101", "robot_pose": robot_pose, "units": {"position": "metres", "joints": "radians", "quaternion": "wxyz"}}
