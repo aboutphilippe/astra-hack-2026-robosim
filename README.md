@@ -2,6 +2,10 @@
 
 Person-free geometric reconstruction of the room in `IMG_2523.JPG`.
 
+## Unity + MuJoCo project
+
+The **UnityProject** folder contains the reconstructed scene in Unity 6000.3.10f1 with the official MuJoCo 3.12.0 integration and matching macOS native library. Open **UnityProject/Assets/Scenes/ReconstructedRoom.unity** and press Play. The 32 chess pieces use native MuJoCo dynamics. The reconstructed arm is hidden and a named mount point is ready for your own robot model. See [Unity setup and controls](UnityProject/README.md) for the full project instructions and validation results.
+
 Open `output/recreated_scene.blend` in Blender 5.2 or newer. The main camera is set to a portrait view inspired by the reference. The additional table-detail camera provides a closer inspection angle.
 
 The scene includes the oak parquet floor, window mullions and shades, diagonal steel brace, room walls and recess, two oak desks, six woven chairs, five open laptops, a 32-piece chess set, white robot arm, articulated device mount, drinkware, electronics and cables, bags, empty loose garments, coat stand, and a multi-cane plant. No people, human meshes, or photographic cutouts are included. Dimensions and hidden surfaces are inferred from a single photograph.

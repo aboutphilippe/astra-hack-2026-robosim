@@ -1,0 +1,37 @@
+{
+  "upstream": "https://github.com/google-deepmind/mujoco",
+  "version": "3.12.0",
+  "tag": "3.12.0",
+  "source_url": "https://github.com/google-deepmind/mujoco/archive/refs/tags/3.12.0.tar.gz",
+  "source_sha256": "9faa979982c3e924e8aaff3b16983bba3a1ab19c81f4f73178ae9c2ea25e467d",
+  "native_url": "https://github.com/google-deepmind/mujoco/releases/download/3.12.0/mujoco-3.12.0-macos-universal2.dmg",
+  "native_archive_sha256": "8410882d724c3637b935dc0482b0de90efed44b17bbcfcb4a165ee46285a4865",
+  "native_library_sha256": "9ce81586927bc230f33329e4938ff21c92abd6c22f465f191bc1d80d79b30ad3",
+  "native_source_path": "mujoco.framework/Versions/A/libmujoco.3.12.0.dylib",
+  "native_platforms": [
+    "macOS arm64",
+    "macOS x86_64"
+  ],
+  "license": "Apache-2.0",
+  "changes": [
+    "Excluded upstream Tests directory and Tests.meta",
+    "Renamed original native library to mujoco.dylib; binary bytes unchanged",
+    "Added native plugin importer metadata, upstream licenses and this provenance record",
+    "Patched Runtime/Bindings/MjBindings.cs _mjVFS to contain void* impl_, matching native 3.12.0 mjmodel.h; see PATCHES.md"
+  ],
+  "notes": "Embedded UPM package. Native library at package root satisfies official automatic binary retriever. Editor C# source unmodified; Runtime has the documented one-field VFS ABI fix. No global installation or security settings changed. Windows/Linux native binaries are not included.",
+  "validation": {
+    "archive_digest": "Matched official GitHub release asset SHA-256",
+    "code_signature": "codesign --verify --strict succeeded outside sandbox; Developer ID Application: Google LLC (EQHXZ8M8AV)",
+    "native_architectures": [
+      "x86_64",
+      "arm64"
+    ],
+    "native_dependencies": [
+      "/usr/lib/libSystem.B.dylib",
+      "/usr/lib/libc++.1.dylib"
+    ],
+    "load_test": "Python ctypes on arm64 loaded library; mj_versionString() = 3.12.0; mj_version() = 3012000",
+    "vfs_abi": "Unity 6000.3.10f1 bundled Mono Marshal.SizeOf(_mjVFS) was 1 byte upstream, 8 bytes after patch, matching native one-pointer mjVFS on both supported 64-bit architectures."
+  }
+}

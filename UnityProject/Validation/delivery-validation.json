@@ -1,0 +1,12 @@
+{
+  "validated_scene_sha256": "e18420ba8ae0ef13fc7645410cc76d9241ff8dbbb35bd296b45f94c056e5342b",
+  "native_simulation_passed": true,
+  "play_mode_passed": true,
+  "segmentation_toggle_passed": true,
+  "reference_robot_hidden": true,
+  "robot_mount_position_unity_metres": [
+    -0.74,
+    0.799,
+    -0.42
+  ]
+}
