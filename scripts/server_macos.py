@@ -49,7 +49,8 @@ def _server_ref(checkout: Path) -> str:
 
 
 def generate(checkout: Path, output: Path, access_file: Path, config: Path,
-             public_origin: str, port: int = 8011, server_ref: str | None = None) -> dict:
+             public_origin: str, port: int = 8011, server_ref: str | None = None,
+             rgbd_frame_file: Path | None = None) -> dict:
     checkout, output, access_file, config = [path.expanduser().absolute() for path in (checkout, output, access_file, config)]
     if any(ord(character) <= 32 for character in public_origin):
         raise ValueError("Public origin must not contain whitespace or control characters")
@@ -85,6 +86,8 @@ def generate(checkout: Path, output: Path, access_file: Path, config: Path,
                "RunAtLoad": True, "KeepAlive": True, "ThrottleInterval": 10, "ProcessType": "Background",
                "Umask": 0o077, "StandardOutPath": str(output / "server.stdout.log"),
                "StandardErrorPath": str(output / "server.stderr.log")}
+    if rgbd_frame_file is not None:
+        payload["EnvironmentVariables"]["NONO_RGBD_FRAME_FILE"] = str(rgbd_frame_file.expanduser().absolute())
     _create(wrapper, shell.encode(), 0o700)
     try:
         _create(plist_path, plistlib.dumps(payload, sort_keys=False), 0o600)
@@ -104,13 +107,15 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--public-origin", required=True)
     parser.add_argument("--port", type=int, default=8011)
     parser.add_argument("--server-ref")
+    parser.add_argument("--rgbd-frame-file", type=Path,
+                        help="Read fresh aligned RGB-D frames from the separate camera worker")
     args = parser.parse_args(argv)
     checkout = args.checkout.expanduser().absolute()
     try:
         result = generate(checkout, args.output or checkout / "artifacts" / "server",
                           args.access_file or checkout / "config" / "team-access.json",
                           args.config or checkout / "config" / "nono.json", args.public_origin,
-                          args.port, args.server_ref)
+                          args.port, args.server_ref, args.rgbd_frame_file)
     except (OSError, ValueError, subprocess.SubprocessError) as exc:
         parser.exit(1, f"server_macos: {exc}\n")
     import json

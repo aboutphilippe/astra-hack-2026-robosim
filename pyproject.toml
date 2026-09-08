@@ -25,6 +25,7 @@ nono-mcp = "chessbot.mcp_server:main"
 nono-discover = "chessbot.hardware:main"
 nono-server = "chessbot.team_server:main"
 nono-team = "chessbot.team_cli:main"
+nono-camera-worker = "chessbot.camera_worker:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["backend/chessbot"]

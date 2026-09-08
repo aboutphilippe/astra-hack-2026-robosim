@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Config>
+    <ConfigStandardVersion>1.1</ConfigStandardVersion>
+    <Log>
+        <FileLogLevel>5</FileLogLevel>
+        <ConsoleLogLevel>2</ConsoleLogLevel>
+    </Log>
+    <Device>
+        <EnumerateNetDevice>false</EnumerateNetDevice>
+    </Device>
+</Config>

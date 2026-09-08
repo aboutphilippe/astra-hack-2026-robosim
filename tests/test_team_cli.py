@@ -161,3 +161,14 @@ def test_launchagent_rejects_insecure_or_credential_bearing_origin(tmp_path, ser
     with pytest.raises(ValueError):
         service_generator.generate(checkout, tmp_path / "generated", access, config, origin, server_ref="abc123")
     assert not (tmp_path / "generated").exists()
+
+
+def test_launchagent_can_select_explicit_camera_worker_file(tmp_path, service_generator):
+    checkout, config, access = make_checkout(tmp_path)
+    frame = tmp_path / "camera with spaces" / "latest.npz"
+    result = service_generator.generate(checkout, tmp_path / "generated", access, config,
+                                        "http://127.0.0.1:8011", server_ref="abc123", rgbd_frame_file=frame)
+    payload = plistlib.loads(Path(result["plist"]).read_bytes())
+    assert payload["EnvironmentVariables"]["NONO_RGBD_FRAME_FILE"] == str(frame)
+    assert "UserName" not in payload
+    assert "sudo" not in Path(result["wrapper"]).read_text()

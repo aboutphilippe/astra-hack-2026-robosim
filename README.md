@@ -55,7 +55,9 @@ cp config/nono.json config/local.json
 NONO_CONFIG=config/local.json uv run nono-api
 ```
 
-An AVFoundation UID is **not** an Orbbec SDK serial. Explicit enrollment prevents an arbitrary SDK device from being selected. The desk fixture’s firmware gate is 1.8.10; the code reports a mismatch and never flashes firmware. Gemini depth is never opened through OpenCV. No camera or motor bus opens when the ordinary simulation starts. `uv run nono-discover` only checks configured paths and installed driver availability; `--sdk` explicitly enumerates cameras.
+An AVFoundation UID is **not** an Orbbec SDK serial. Explicit enrollment prevents an arbitrary SDK device from being selected. The desk fixture's firmware gate is 1.8.10; the code reports a mismatch and never flashes firmware. Gemini depth is never opened through OpenCV. No camera or motor bus opens when the ordinary simulation starts. `uv run nono-discover` only checks configured paths and installed driver availability; `--sdk` explicitly enumerates cameras.
+
+On macOS, `uvc_open ... Return Code: -3` can mean the SDK lacks permission to detach the USB camera driver even after Camera privacy access is granted. Use [the camera worker setup](docs/orbbec-macos.md): it opens the SDK device with administrator privileges, drops them before publishing frames, and feeds the ordinary server through `NONO_RGBD_FRAME_FILE`.
 
 The supplied [hardware context pack](docs/hardware-context.md) is preserved as source material. Its relative links refer to the previous ChessBench project, not files implemented here. In particular, its 36 mm / 38.1 mm conflict is resolved by measurement, not by claiming either prior is calibrated.
 

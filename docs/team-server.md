@@ -48,6 +48,8 @@ uv run pytest
 
 If this server will capture cameras, install the optional drivers with `uv sync --locked --extra camera` and use the locally enrolled camera configuration described in [README](../README.md#hardware). The default dependency set supports simulation without those drivers.
 
+For the macOS Orbbec USB access-denied error, use [the dedicated camera worker](orbbec-macos.md). Add `--rgbd-frame-file /absolute/path/private/rgbd/top.npz` when generating the service so the unprivileged API reads its fresh aligned frames. The camera worker is started separately by the Mac operator and does not change the server's user privileges.
+
 Stop any old development API that owns the physical cameras before starting the shared server. Only one server process should own the cell. The generated LaunchAgent records the checkout revision in `NONO_SERVER_REF` so clients can identify the deployed revision. A tracked dirty checkout is labeled with `-dirty`.
 
 For a local smoke test, use the loopback origin:
