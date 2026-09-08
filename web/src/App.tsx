@@ -44,7 +44,7 @@ function Chessboard({ state, selected, onSquare, disabled }: { state: LabState; 
   </div>
 }
 
-function Calibration({ state, canMutate, onClose, onRefresh, reportError }: { state: LabState | null; canMutate: boolean; onClose: () => void; onRefresh: () => Promise<void>; reportError: (message: string) => void }) {
+function Calibration({ state, canMutate, onClose, onRefresh, reportError }: { state: LabState | null; canMutate: boolean; onClose: () => void; onRefresh: () => Promise<void>; reportError: (message: string | null) => void }) {
   const [corners, setCorners] = useState<[number, number][]>([])
   const [cornerText, setCornerText] = useState(['', '', '', ''])
   const [frameSize, setFrameSize] = useState<[number, number]>([640, 480])
@@ -58,7 +58,7 @@ function Calibration({ state, canMutate, onClose, onRefresh, reportError }: { st
   const labels = ['a1 outer', 'h1 outer', 'h8 outer', 'a8 outer']
   const perform = async (action: () => Promise<void>) => {
     if (!canMutate) { setCalibrationError('Take control of the shared session before changing calibration.'); return }
-    setWorking(true); setMessage(''); setCalibrationError('')
+    setWorking(true); setMessage(''); setCalibrationError(''); reportError(null)
     try { await action(); await onRefresh() } catch (error) { const message = error instanceof Error ? error.message : 'Calibration failed'; setCalibrationError(message); reportError(message) } finally { setWorking(false) }
   }
   return <div className="modal-backdrop" onMouseDown={event => { if (event.target === event.currentTarget) onClose() }}>
